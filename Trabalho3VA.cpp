@@ -22,13 +22,12 @@ void print_alcance(void);
 void init_buscaP(void);
 void buscaP(int );
 void print_alc_buscaP(int );
-void FordBellman(int );
 void Prim(int );
 void Dijkstra(int );
 void Kruskal(void  );
-void Boruvka(int );
 void AGM_buscaP( int , int );
 void print_listas_AGM_B(int , int , int* );
+
 // Variáveis Globais
 int MAdj[MaxDim][MaxDim];
 int Dist[MaxDim][MaxDim];
@@ -62,103 +61,19 @@ main()
 	constroi_lista (Dim);
 	print_grafo(Dim);
 	print_listas(Dim);
-	printf(" Boruvka \n");
-    Boruvka( Dim );
+	printf("\n Busca em Profundidade: \n");
+	buscaP(Dim );
+	printf("\n PRIM: \n");
+	Prim(Dim );
+	printf("\n DIJKSTRA: \n");
+	Dijkstra(Dim );
+	printf("\n KRUSKAL: \n");
+	Kruskal();
+
 	return(0);
 }
 
 //funções e procedimentos
-
-void Boruvka(int n)
-{
-     int i, j, p, ii, jj, iter, n_grupos;
-     int grupo[MaxDim], minDist[MaxDim], minArco[MaxDim];
-     int arco_usado[MaxDim*MaxDim];
-       
-     printf("\n n=%d Numero de arcos=%d \n", n, M_arcos);
-     for(i=1; i<=n; i++)
-     {
-       grupo[i] = i;
-       AGM_CardP[i] = 0;
-     }
-     for(i=1; i<=M_arcos; i++)
-     {
-       arco_usado[i] = 0;
-     }
-     n_grupos = n;
-
-     iter = 0;
-     print_listas_AGM_B( n, iter, grupo);
-
-     
-     do
-     {
-       iter++;
-           for(i=1; i<=n_grupos; i++)
-       {
-         minDist[i]=DistInfinita;
-       }
-       
-           for(j=1; j<=M_arcos; j++)
-       {
-          ii = I_arco[j]; jj = J_arco[j];
-          if (grupo[ii] != grupo[jj])
-          {
-             if ( Dist[ii][jj] < minDist[grupo[ii]])
-             {
-                  minDist[grupo[ii]] = Dist[ii][jj];
-                  minArco[grupo[ii]] = j;
-             }
-             if ( Dist[ii][jj] < minDist[grupo[jj]])
-             {
-                  minDist[grupo[jj]] = Dist[ii][jj];
-                  minArco[grupo[jj]] = j;
-             }
-          }
-       }
-           for (ii=1; ii<=n_grupos; ii++)
-       {
-           jj = minArco[ii];
-           if (arco_usado[jj] == 0) 
-           {
-            arco_usado[jj] = 1;
-            
-            i = I_arco[jj]; j = J_arco[jj];
-			p = AGM_CardP[i] + 1;
-			AGM_LisAdjP[i][p] = j;
-			AGM_CardP[i] = p;
-			p = AGM_CardP[j] + 1;
-            AGM_LisAdjP[j][p] = i;
-			AGM_CardP[j] = p;
-           }
-       }
-                           
-       for (i=1; i<=n; i++)
-       {
-           mark[i] = 0;
-       }
-       
-       n_grupos = 0;
-       for (i=1; i<=n; i++)
-       {
-           if (mark[i] == 0)
-           {
-               n_grupos++;
-               AGM_buscaP( i, n_grupos );
-           }
-       }       
-       
-       for (i=1; i<=n; i++)
-       {
-           grupo[i] = mark[i];
-       }
-
-       print_listas_AGM_B( n, iter, grupo);
-       
-     }
-     while (n_grupos > 1);
-}
-
 
 void AGM_buscaP( int v, int rotulo)
 {
@@ -175,24 +90,6 @@ void AGM_buscaP( int v, int rotulo)
          }
      }
 }
-
-void print_listas_AGM_B(int n, int iter, int grupo[])
-{
-	int i,j, p;
-	printf("\n Boruvka - Floresta Iter %d - Listas de Adjacencia\n", iter);
-	for(i=1; i<=n; i++)
-	{
-		printf("%d | Grupo %d | %d Arcos Saindo : ", i, grupo[i], AGM_CardP[i]);
-		p = AGM_CardP[i];
-		for(j=1; j<=p; j++)
-		{
-			printf(" %d ",AGM_LisAdjP[i][j]);
-		}
-		printf("\n");
-	}
-	printf("\n");
-}
-
 
 void Dijkstra(int s)
 {
@@ -322,7 +219,7 @@ void Prim(int s)
 		   }
 	   }
 
-
+		printf("\n Prim: ");
        printf(" Vmin: %d  DistMin: %d\n", vmin, dmin);
 
 	   pos_prox[vmin] = k;
@@ -431,90 +328,6 @@ void Kruskal( )
                 ffunion(c1,c2);
          }
      }
-
-}
-
-void FordBellman(int s)
-{
-	int v,w,k, ll;
-	int d_temp[MaxDim];
-	int pred[MaxDim];
-	int circ_neg;
-
-	circ_neg = 0;
-	for (v=1; v<=Dim; v++)
-	{
-		d_temp[v] = DistInfinita;
-		pred[v] = -1;
-	}
-
-	d_temp[s] = 0;
-	pred[s] = 0;
-    for (k=1; k<=Dim - 1; k++)
-	{
-
-		for(ll=1; ll<=M_arcos; ll++)
-		{
-			v = I_arco[ll];
-			w = J_arco[ll];
-			if( d_temp[ v ] +  Dist[v][w] < d_temp[w] )
-			{
-				d_temp[w] = d_temp[ v ] +  Dist[v][w];
-				pred[w] = v;
-			}
-		}
-	    for (v=1; v<=Dim; v++)
-        {
-		   printf(" %d D=%d Caminho: ",v, d_temp[v]);
-		   w = v;
-	       printf("\n");
-        }
-        getch();
-
-
-	}
-
-        getch();
-	for(ll=1; ll<=M_arcos; ll++)
-	{
-			v = I_arco[ll];
-			w = J_arco[ll];
-			if( d_temp[ v ] +  Dist[v][w] < d_temp[w] )
-			{
-				d_temp[w] = d_temp[ v ] +  Dist[v][w];
-				pred[w] = v;
-				printf(" CIRCUITO NEGATIVO DETECTADO\n");
-				circ_neg=1;
-				w=v;
-				do{
-                    printf("ant v=%d w=%d \n",v,w);
-					printf(" %d ",w);
-					w = pred[w];
-                    printf("dep v=%d w=%d \n",v,w);
-                    getch();
-				}
-				while(w != v);
-				printf(" \n\n ");
-
-			}
-	}
-
-
-    if(circ_neg == 0)
-	{
-	printf(" Ford Bellman -- CMC a partir de %d \n",s);
-	for (v=1; v<=Dim; v++)
-	{
-		printf(" %d D=%d Caminho: ",v, d_temp[v]);
-		w = v;
-		while (pred[w] > 0)
-		{
-			printf(" %d ",pred[w]);
-			w = pred[w];
-		}
-		printf("\n");
-	}
-	}
 
 }
 
